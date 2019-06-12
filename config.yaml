@@ -1,0 +1,17 @@
+stellar:
+  is_testnet: true
+
+horizon:
+  endpoint:
+  signer: "S_SOME_VALID_SECRET_KEY" # Issuer of assets
+
+payment:
+  source_signer: "S_SOME_VALID_STELLAR_SECRET_KEY" # Payment sender signer
+  source_address: "G_SOME_VALID_STELLAR_ADDRESS" # Payment sender address
+
+withdraw:
+  signer: "S_SOME_VALID_SECRET_KEY"
+  owner: "G_SOME_VALID_ADDRESS"
+
+log:
+  level: debug
