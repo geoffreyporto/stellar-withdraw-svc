@@ -18,6 +18,12 @@ type ReviewableRequestIncludes struct {
 	RequestDetails bool
 }
 
+func (p ReviewableRequestIncludes) Prepare() url.Values {
+	result := url.Values{}
+	p.prepare(&result)
+	return result
+}
+
 func (f ReviewableRequestFilters) prepare(values *url.Values) {
 	if f.State != nil {
 		values.Add("filter[state]", fmt.Sprintf("%d", *f.State))

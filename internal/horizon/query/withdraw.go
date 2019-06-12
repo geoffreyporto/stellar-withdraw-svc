@@ -54,6 +54,12 @@ func (p CreateWithdrawRequestIncludes) prepare(result *url.Values) {
 	}
 }
 
+func (p CreateWithdrawRequestIncludes) Prepare() url.Values {
+	result := url.Values{}
+	p.prepare(&result)
+	return result
+}
+
 func CreateWithdrawRequestByID(code string) string {
 	return fmt.Sprintf("/v3/create_withdraw_requests/%s", code)
 }

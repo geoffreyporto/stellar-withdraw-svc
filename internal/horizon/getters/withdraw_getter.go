@@ -8,7 +8,7 @@ import (
 	"github.com/tokend/stellar-withdraw-svc/internal/horizon/client"
 	"github.com/tokend/stellar-withdraw-svc/internal/horizon/page"
 	"github.com/tokend/stellar-withdraw-svc/internal/horizon/query"
-	"gitlab.com/distributed_lab/logan"
+	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	regources "gitlab.com/tokend/regources/generated"
 )
@@ -86,7 +86,7 @@ func (g *defaultCreateWithdrawRequestHandler) Page() page.Params {
 
 func (g *defaultCreateWithdrawRequestHandler) ByID(ID string) (*regources.ReviewableRequestResponse, error) {
 	result := &regources.ReviewableRequestResponse{}
-	err := g.base.GetPage(query.CreateWithdrawRequestByID(ID), g.params, result)
+	err := g.base.GetPage(query.CreateWithdrawRequestByID(ID), g.params.Includes, result)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get record by id", logan.F{
 			"id": ID,
