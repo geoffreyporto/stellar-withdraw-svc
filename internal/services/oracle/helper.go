@@ -15,8 +15,8 @@ import (
 func (s *Service) getFilters() query.CreateWithdrawRequestFilters {
 	state := ReviewableRequestStatePending
 	reviewer := s.withdrawCfg.Owner.Address()
-	pendingTasks := fmt.Sprintf("%d", TaskWithdrawReadyToSendPayment)
-	pendingTasksNotSet := fmt.Sprintf("%d", TaskWithdrawSending)
+	pendingTasks := fmt.Sprintf("%d", taskTrySendToStellar)
+	pendingTasksNotSet := fmt.Sprintf("%d", taskApproveSuccessfulTxSend)
 	return query.CreateWithdrawRequestFilters{
 		Asset: &s.asset.ID,
 		ReviewableRequestFilters: query.ReviewableRequestFilters{
@@ -44,7 +44,7 @@ func (s *Service) processWithdraw(ctx context.Context, request regources.Reviewa
 		return nil
 	}
 
-	err = s.approveRequest(ctx, request, TaskWithdrawSending, TaskWithdrawReadyToSendPayment, map[string]interface{}{})
+	err = s.approveRequest(ctx, request, taskApproveSuccessfulTxSend, taskTrySendToStellar, map[string]interface{}{})
 	if err != nil {
 		return errors.Wrap(err, "failed to review request first time", logan.F{"request_id": request.ID})
 	}
@@ -54,7 +54,7 @@ func (s *Service) processWithdraw(ctx context.Context, request regources.Reviewa
 		return errors.Wrap(err, "payment failed")
 	}
 
-	err = s.approveRequest(ctx, request, 0, TaskWithdrawSending, map[string]interface{}{
+	err = s.approveRequest(ctx, request, 0, taskApproveSuccessfulTxSend, map[string]interface{}{
 		"stellar_tx_hash": txSuccess.Hash,
 	})
 

@@ -11,15 +11,15 @@ import (
 )
 
 const (
-	TaskWithdrawReadyToSendPayment = 2048
-	TaskWithdrawSending            = 4096
+	taskTrySendToStellar        uint32 = 2048
+	taskApproveSuccessfulTxSend uint32 = 4096
 
 	//Request state
 	ReviewableRequestStatePending = 1
 	//page size
 	requestPageSizeLimit = 10
-
 )
+
 func (s *Service) approveRequest(
 	ctx context.Context,
 	request regources.ReviewableRequest,
@@ -41,8 +41,8 @@ func (s *Service) approveRequest(
 			ExternalDetails: string(bb),
 		},
 		ReviewDetails: xdrbuild.ReviewDetails{
-			TasksToAdd:    toAdd,
-			TasksToRemove: toRemove,
+			TasksToAdd:      toAdd,
+			TasksToRemove:   toRemove,
 			ExternalDetails: string(bb),
 		},
 	}).Sign(s.withdrawCfg.Signer).Marshal()
