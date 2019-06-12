@@ -14,10 +14,10 @@ type config struct {
 	stellar        horizonclient.ClientInterface
 	withdrawConfig WithdrawConfig
 
-	log    *logan.Entry
 	getter kv.Getter
 	once   comfig.Once
 	Horizoner
+	comfig.Logger
 }
 
 type Config interface {
@@ -32,6 +32,7 @@ func NewConfig(getter kv.Getter) Config {
 	return &config{
 		getter:    getter,
 		Horizoner: NewHorizoner(getter),
+		Logger:    comfig.NewLogger(getter, comfig.LoggerOpts{}),
 	}
 }
 

@@ -112,7 +112,9 @@ func (g *defaultAssetHandler) Next() (*regources.AssetListResponse, error) {
 		return nil, errors.New("Empty links")
 	}
 	if g.currentPageLinks.Next == "" {
-		return nil, nil
+		return nil, errors.From(errors.New("No link to page"), logan.F{
+			"page": "next",
+		})
 	}
 	result := &regources.AssetListResponse{}
 	err := g.base.PageFromLink(g.currentPageLinks.Next, result)
@@ -130,7 +132,9 @@ func (g *defaultAssetHandler) Prev() (*regources.AssetListResponse, error) {
 		return nil, errors.New("Empty links")
 	}
 	if g.currentPageLinks.Prev == "" {
-		return nil, nil
+		return nil, errors.From(errors.New("No link to page"), logan.F{
+			"page": "prev",
+		})
 	}
 
 	result := &regources.AssetListResponse{}
@@ -149,7 +153,9 @@ func (g *defaultAssetHandler) Self() (*regources.AssetListResponse, error) {
 		return nil, errors.New("Empty links")
 	}
 	if g.currentPageLinks.Self == "" {
-		return nil, nil
+		return nil, errors.From(errors.New("No link to page"), logan.F{
+			"page": "self",
+		})
 	}
 	result := &regources.AssetListResponse{}
 	err := g.base.PageFromLink(g.currentPageLinks.Self, result)
@@ -167,7 +173,9 @@ func (g *defaultAssetHandler) First() (*regources.AssetListResponse, error) {
 		return nil, errors.New("Empty links")
 	}
 	if g.currentPageLinks.First == "" {
-		return nil, nil
+		return nil, errors.From(errors.New("No link to page"), logan.F{
+			"page": "first",
+		})
 	}
 	result := &regources.AssetListResponse{}
 	err := g.base.PageFromLink(g.currentPageLinks.Self, result)

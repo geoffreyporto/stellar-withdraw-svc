@@ -112,7 +112,9 @@ func (g *defaultCreateWithdrawRequestHandler) Next() (*regources.ReviewableReque
 		return nil, errors.New("Empty links")
 	}
 	if g.currentPageLinks.Next == "" {
-		return nil, nil
+		return nil, errors.From(errors.New("No link to page"), logan.F{
+			"page": "next",
+		})
 	}
 	result := &regources.ReviewableRequestListResponse{}
 	err := g.base.PageFromLink(g.currentPageLinks.Next, result)
@@ -130,7 +132,9 @@ func (g *defaultCreateWithdrawRequestHandler) Prev() (*regources.ReviewableReque
 		return nil, errors.New("Empty links")
 	}
 	if g.currentPageLinks.Prev == "" {
-		return nil, nil
+		return nil, errors.From(errors.New("No link to page"), logan.F{
+			"page": "prev",
+		})
 	}
 
 	result := &regources.ReviewableRequestListResponse{}
@@ -149,7 +153,9 @@ func (g *defaultCreateWithdrawRequestHandler) Self() (*regources.ReviewableReque
 		return nil, errors.New("Empty links")
 	}
 	if g.currentPageLinks.Self == "" {
-		return nil, nil
+		return nil, errors.From(errors.New("No link to page"), logan.F{
+			"page": "self",
+		})
 	}
 	result := &regources.ReviewableRequestListResponse{}
 	err := g.base.PageFromLink(g.currentPageLinks.Self, result)
@@ -167,7 +173,9 @@ func (g *defaultCreateWithdrawRequestHandler) First() (*regources.ReviewableRequ
 		return nil, errors.New("Empty links")
 	}
 	if g.currentPageLinks.First == "" {
-		return nil, nil
+		return nil, errors.From(errors.New("No link to page"), logan.F{
+			"page": "first",
+		})
 	}
 	result := &regources.ReviewableRequestListResponse{}
 	err := g.base.PageFromLink(g.currentPageLinks.Self, result)
