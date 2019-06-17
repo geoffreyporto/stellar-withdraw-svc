@@ -23,7 +23,7 @@ type AssetDetails struct {
 		AssetType string `json:"asset_type"`
 		Code      string `json:"asset_code"`
 		Issuer    string `json:"issuer"`
-	}
+	} `json:"stellar"`
 }
 
 func (s AssetDetails) Validate() error {
