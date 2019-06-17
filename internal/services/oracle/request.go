@@ -14,10 +14,8 @@ const (
 	taskTrySendToStellar        uint32 = 2048
 	taskApproveSuccessfulTxSend uint32 = 4096
 
-	//Request state
-	ReviewableRequestStatePending = 1
-	//page size
-	requestPageSizeLimit = 10
+	invalidDetails       = "Invalid creator details"
+	invalidTargetAddress = "Invalid target address"
 )
 
 func (s *Service) approveRequest(
@@ -49,7 +47,30 @@ func (s *Service) approveRequest(
 	if err != nil {
 		return errors.Wrap(err, "failed to prepare transaction envelope")
 	}
-	_, err = s.txSubmitter.Submit(ctx, envelope, false)
+	_, err = s.txSubmitter.Submit(ctx, envelope, true)
+	if err != nil {
+		return errors.Wrap(err, "failed to approve withdraw request")
+	}
+
+	return nil
+}
+
+func (s *Service) permanentReject(
+	ctx context.Context,
+	request regources.ReviewableRequest, reason string) error {
+	id, err := strconv.ParseUint(request.ID, 10, 64)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse request id")
+	}
+	envelope, err := s.builder.Transaction(s.withdrawCfg.Owner).Op(xdrbuild.ReviewRequest{
+		ID:     id,
+		Hash:   &request.Attributes.Hash,
+		Action: xdr.ReviewRequestOpActionPermanentReject,
+	}).Sign(s.withdrawCfg.Signer).Marshal()
+	if err != nil {
+		return errors.Wrap(err, "failed to prepare transaction envelope")
+	}
+	_, err = s.txSubmitter.Submit(ctx, envelope, true)
 	if err != nil {
 		return errors.Wrap(err, "failed to approve withdraw request")
 	}

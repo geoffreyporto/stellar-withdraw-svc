@@ -3,30 +3,13 @@ package oracle
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"github.com/stellar/go/clients/horizonclient"
 	hProtocol "github.com/stellar/go/protocols/horizon"
 	"github.com/stellar/go/txnbuild"
-	"github.com/tokend/stellar-withdraw-svc/internal/horizon/query"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	regources "gitlab.com/tokend/regources/generated"
 )
-
-func (s *Service) getFilters() query.CreateWithdrawRequestFilters {
-	state := ReviewableRequestStatePending
-	reviewer := s.withdrawCfg.Owner.Address()
-	pendingTasks := fmt.Sprintf("%d", taskTrySendToStellar)
-	pendingTasksNotSet := fmt.Sprintf("%d", taskApproveSuccessfulTxSend)
-	return query.CreateWithdrawRequestFilters{
-		Asset: &s.asset.ID,
-		ReviewableRequestFilters: query.ReviewableRequestFilters{
-			State:              &state,
-			Reviewer:           &reviewer,
-			PendingTasks:       &pendingTasks,
-			PendingTasksNotSet: &pendingTasksNotSet,
-		},
-	}
-}
 
 func (s *Service) processWithdraw(ctx context.Context, request regources.ReviewableRequest, details *regources.CreateWithdrawRequest) error {
 	detailsbb := []byte(details.Attributes.CreatorDetails)
@@ -34,14 +17,19 @@ func (s *Service) processWithdraw(ctx context.Context, request regources.Reviewa
 	err := json.Unmarshal(detailsbb, &withdrawDetails)
 	if err != nil {
 		s.log.WithField("request_id", request.ID).WithError(err).Warn("Unable to unmarshal creator details")
-		return nil
+		return s.permanentReject(ctx, request, invalidDetails)
 	}
+
 	if withdrawDetails.TargetAddress == "" {
 		s.log.
 			WithField("creator_details", details.Attributes.CreatorDetails).
 			WithError(err).
 			Warn("address missing")
-		return nil
+		return s.permanentReject(ctx, request, invalidTargetAddress)
+	}
+
+	if !s.proveExternalAccountExists(withdrawDetails.TargetAddress) {
+		return s.permanentReject(ctx, request, "external account does not exist")
 	}
 
 	err = s.approveRequest(ctx, request, taskApproveSuccessfulTxSend, taskTrySendToStellar, map[string]interface{}{})
@@ -66,14 +54,26 @@ func (s *Service) processWithdraw(ctx context.Context, request regources.Reviewa
 }
 
 func (s *Service) getAsset() txnbuild.Asset {
-	if s.asset.StellarDetails.AssetType == "native" {
+	if s.asset.Stellar.AssetType == string(horizonclient.AssetTypeNative) {
 		return txnbuild.NativeAsset{}
 	}
 
 	return txnbuild.CreditAsset{
-		Issuer: s.asset.StellarDetails.Issuer,
-		Code:   s.asset.StellarDetails.Code,
+		Issuer: s.asset.Stellar.Issuer,
+		Code:   s.asset.Stellar.Code,
 	}
+}
+
+func (s *Service) proveExternalAccountExists(accountID string) bool {
+	_, err := s.stellarClient.AccountDetail(horizonclient.AccountRequest{
+		AccountID: accountID,
+	})
+	if err != nil {
+		s.log.WithField("account_id", accountID).Debug("failed to prove existence of target account")
+		return false
+	}
+	return true
+
 }
 
 func (s *Service) submitPayment(
@@ -93,7 +93,7 @@ func (s *Service) submitPayment(
 				Asset:       asset,
 				Amount:      amount,
 			}},
-		Timebounds: txnbuild. NewTimeout(60),
+		Timebounds: txnbuild.NewTimeout(60),
 		Network:    s.stellarRoot.NetworkPassphrase,
 	}
 	envelope, err := tx.BuildSignEncode(s.paymentCfg.SourceSigner)
