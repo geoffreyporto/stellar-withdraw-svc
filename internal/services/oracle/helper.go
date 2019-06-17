@@ -29,7 +29,7 @@ func (s *Service) processWithdraw(ctx context.Context, request regources.Reviewa
 	}
 
 	if !s.proveExternalAccountExists(withdrawDetails.TargetAddress) {
-		return s.permanentReject(ctx, request, "external account does not exist")
+		return s.permanentReject(ctx, request, noExtAccount)
 	}
 
 	err = s.approveRequest(ctx, request, taskApproveSuccessfulTxSend, taskTrySendToStellar, map[string]interface{}{})

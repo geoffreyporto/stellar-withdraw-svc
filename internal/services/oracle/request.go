@@ -16,6 +16,7 @@ const (
 
 	invalidDetails       = "Invalid creator details"
 	invalidTargetAddress = "Invalid target address"
+	noExtAccount = "External account does not exist"
 )
 
 func (s *Service) approveRequest(
