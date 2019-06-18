@@ -3,13 +3,29 @@ package oracle
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/stellar/go/clients/horizonclient"
 	hProtocol "github.com/stellar/go/protocols/horizon"
 	"github.com/stellar/go/txnbuild"
+	"github.com/tokend/stellar-withdraw-svc/internal/horizon/page"
+	"github.com/tokend/stellar-withdraw-svc/internal/horizon/query"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	regources "gitlab.com/tokend/regources/generated"
 )
+
+
+func (s *Service) prepare() {
+	filters := s.getFilters()
+	s.withdrawStreamer.SetFilters(filters)
+	s.withdrawStreamer.SetIncludes(query.CreateWithdrawRequestIncludes{
+		ReviewableRequestIncludes: query.ReviewableRequestIncludes{
+			RequestDetails: true,
+		},
+	})
+	limit := fmt.Sprintf("%d", requestPageSizeLimit)
+	s.withdrawStreamer.SetPageParams(page.Params{Limit: &limit})
+}
 
 func (s *Service) processWithdraw(ctx context.Context, request regources.ReviewableRequest, details *regources.CreateWithdrawRequest) error {
 	detailsbb := []byte(details.Attributes.CreatorDetails)

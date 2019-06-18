@@ -3,6 +3,8 @@ package oracle
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"github.com/tokend/stellar-withdraw-svc/internal/horizon/query"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 	"gitlab.com/tokend/go/xdr"
 	"gitlab.com/tokend/go/xdrbuild"
@@ -14,9 +16,14 @@ const (
 	taskTrySendToStellar        uint32 = 2048
 	taskApproveSuccessfulTxSend uint32 = 4096
 
+	//Request state
+	reviewableRequestStatePending = 1
+	//page size
+	requestPageSizeLimit = 10
+
 	invalidDetails       = "Invalid creator details"
 	invalidTargetAddress = "Invalid target address"
-	noExtAccount = "External account does not exist"
+	noExtAccount         = "External account does not exist"
 )
 
 func (s *Service) approveRequest(
@@ -77,4 +84,21 @@ func (s *Service) permanentReject(
 	}
 
 	return nil
+}
+
+
+func (s *Service) getFilters() query.CreateWithdrawRequestFilters {
+	state := reviewableRequestStatePending
+	reviewer := s.withdrawCfg.Owner.Address()
+	pendingTasks := fmt.Sprintf("%d", taskTrySendToStellar)
+	pendingTasksNotSet := fmt.Sprintf("%d", taskApproveSuccessfulTxSend)
+	return query.CreateWithdrawRequestFilters{
+		Asset: &s.asset.ID,
+		ReviewableRequestFilters: query.ReviewableRequestFilters{
+			State:              &state,
+			Reviewer:           &reviewer,
+			PendingTasks:       &pendingTasks,
+			PendingTasksNotSet: &pendingTasksNotSet,
+		},
+	}
 }

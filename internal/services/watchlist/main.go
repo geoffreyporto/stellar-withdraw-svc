@@ -55,9 +55,9 @@ func (s *Service) Run(ctx context.Context) {
 		s.log,
 		"asset-watcher",
 		s.processAllAssetsOnce,
-		10*time.Second,
-		20*time.Second,
-		5*time.Minute,
+		time.Minute,
+		time.Minute,
+		time.Hour,
 	)
 }
 
@@ -129,11 +129,12 @@ func (s *Service) filter(assets []regources.Asset) ([]Details, error) {
 				"asset_details": details,
 			})
 		}
-		if err = assetDetails.Validate(); err != nil {
-			return nil, errors.Wrap(err, "incorrect asset details")
-		}
 
 		if !assetDetails.Stellar.Withdraw {
+			continue
+		}
+		if err = assetDetails.Validate(); err != nil {
+			s.log.WithError(err).Warn("incorrect asset details")
 			continue
 		}
 
