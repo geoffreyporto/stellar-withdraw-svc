@@ -18,7 +18,7 @@ type StellarWithdrawDetails struct {
 
 type Service struct {
 	stellarRoot hProtocol.Root
-	builder     *xdrbuild.Builder
+	builder     xdrbuild.Builder
 	asset       watchlist.Details
 
 	stellarClient horizonclient.ClientInterface
@@ -52,7 +52,7 @@ type Opts struct {
 	AssetDetails   watchlist.Details
 	WithdrawConfig config.WithdrawConfig
 	StellarClient  horizonclient.ClientInterface
-	Builder        *xdrbuild.Builder
+	Builder        xdrbuild.Builder
 	TXSubmitter    submit.Interface
 	Log            *logan.Entry
 	Withdrawals    <-chan request.Details

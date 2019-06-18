@@ -12,12 +12,13 @@ import (
 	"time"
 )
 
-
 type Service struct {
-	streamer getters.AssetHandler
-	log      *logan.Entry
-	owner    string
-	ch       chan Details
+	streamer  getters.AssetHandler
+	log       *logan.Entry
+	owner     string
+	watchlist map[string]bool
+	toAdd     chan Details
+	toRemove  chan string
 }
 
 type Opts struct {
@@ -29,30 +30,56 @@ type Opts struct {
 func New(opts Opts) *Service {
 	ch := make(chan Details)
 	return &Service{
-		streamer: opts.Streamer,
-		owner:    opts.AssetOwner,
-		log:      opts.Log.WithField("service", "watchlist"),
-		ch:       ch,
+		streamer:  opts.Streamer,
+		owner:     opts.AssetOwner,
+		log:       opts.Log.WithField("service", "watchlist"),
+		toAdd:     ch,
+		watchlist: make(map[string]bool),
 	}
 }
 
-func (s *Service) GetChan() <-chan Details {
-	return s.ch
+func (s *Service) GetToAdd() <-chan Details {
+	return s.toAdd
+}
+
+func (s *Service) GetToRemove() <-chan string {
+	return s.toRemove
 }
 
 func (s *Service) Run(ctx context.Context) {
-	defer close(s.ch)
+	defer close(s.toAdd)
+	defer close(s.toRemove)
 
-	running.WithBackOff(ctx, s.log, "asset-watcher", func(ctx context.Context) error {
-		assetsToWatch, err := s.getWatchList()
-		if err != nil {
-			return errors.Wrap(err, "failed to get asset watch list")
+	running.WithBackOff(
+		ctx,
+		s.log,
+		"asset-watcher",
+		s.processAllAssetsOnce,
+		10*time.Second,
+		20*time.Second,
+		5*time.Minute,
+	)
+}
+
+func (s *Service) processAllAssetsOnce(ctx context.Context) error {
+	active := make(map[string]bool)
+	assetsToWatch, err := s.getWatchList()
+	if err != nil {
+		return errors.Wrap(err, "failed to get asset watch list")
+	}
+	for _, asset := range assetsToWatch {
+		s.toAdd <- asset
+		active[asset.ID] = true
+	}
+
+	for asset := range s.watchlist {
+		if _, ok := active[asset]; !ok {
+			s.toRemove <- asset
 		}
-		for _, asset := range assetsToWatch {
-			s.ch <- asset
-		}
-		return nil
-	}, 10*time.Second, 20*time.Second, 5*time.Minute)
+	}
+
+	s.watchlist = active
+	return nil
 }
 
 func (s *Service) getWatchList() ([]Details, error) {
