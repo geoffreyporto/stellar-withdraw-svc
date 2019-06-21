@@ -18,6 +18,8 @@ In order for service to start watching withdrawals in specific asset, asset deta
    "asset_type": "AlphaNum4",
    },
 ```
+Service will only listen for withdraw requests with `2048` pending tasks flag set and `4096` flag not set.
+So, either value by key `withdrawal_tasks:*`, or `withdrawal_tasks:ASSET_CODE`  must contain `2048` flag and must not contain flag `4096`.
 
 ## Config
 
