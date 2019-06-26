@@ -74,6 +74,7 @@ func (s *Service) permanentReject(
 		ID:     id,
 		Hash:   &request.Attributes.Hash,
 		Action: xdr.ReviewRequestOpActionPermanentReject,
+		Details: xdrbuild.WithdrawalDetails{},
 	}).Sign(s.withdrawCfg.Signer).Marshal()
 	if err != nil {
 		return errors.Wrap(err, "failed to prepare transaction envelope")
