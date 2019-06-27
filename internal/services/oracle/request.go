@@ -74,6 +74,9 @@ func (s *Service) permanentReject(
 		ID:     id,
 		Hash:   &request.Attributes.Hash,
 		Action: xdr.ReviewRequestOpActionPermanentReject,
+		Details: xdrbuild.WithdrawalDetails{
+			ExternalDetails: "{}",
+		},
 	}).Sign(s.withdrawCfg.Signer).Marshal()
 	if err != nil {
 		return errors.Wrap(err, "failed to prepare transaction envelope")
@@ -85,7 +88,6 @@ func (s *Service) permanentReject(
 
 	return nil
 }
-
 
 func (s *Service) getFilters() query.CreateWithdrawRequestFilters {
 	state := reviewableRequestStatePending

@@ -123,6 +123,7 @@ func (g *defaultCreateWithdrawRequestHandler) Next() (*regources.ReviewableReque
 			"link": g.currentPageLinks.Next,
 		})
 	}
+	g.currentPageLinks = result.Links
 
 	return result, nil
 }
@@ -140,10 +141,11 @@ func (g *defaultCreateWithdrawRequestHandler) Prev() (*regources.ReviewableReque
 	result := &regources.ReviewableRequestListResponse{}
 	err := g.base.PageFromLink(g.currentPageLinks.Prev, result)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get next page", logan.F{
-			"link": g.currentPageLinks.Next,
+		return nil, errors.Wrap(err, "failed to get previous page", logan.F{
+			"link": g.currentPageLinks.Prev,
 		})
 	}
+	g.currentPageLinks = result.Links
 
 	return result, nil
 }
@@ -160,10 +162,11 @@ func (g *defaultCreateWithdrawRequestHandler) Self() (*regources.ReviewableReque
 	result := &regources.ReviewableRequestListResponse{}
 	err := g.base.PageFromLink(g.currentPageLinks.Self, result)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get next page", logan.F{
-			"link": g.currentPageLinks.Next,
+		return nil, errors.Wrap(err, "failed to get same page", logan.F{
+			"link": g.currentPageLinks.Self,
 		})
 	}
+	g.currentPageLinks = result.Links
 
 	return result, nil
 }
@@ -178,12 +181,13 @@ func (g *defaultCreateWithdrawRequestHandler) First() (*regources.ReviewableRequ
 		})
 	}
 	result := &regources.ReviewableRequestListResponse{}
-	err := g.base.PageFromLink(g.currentPageLinks.Self, result)
+	err := g.base.PageFromLink(g.currentPageLinks.First, result)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get next page", logan.F{
-			"link": g.currentPageLinks.Next,
+		return nil, errors.Wrap(err, "failed to get first page", logan.F{
+			"link": g.currentPageLinks.First,
 		})
 	}
+	g.currentPageLinks = result.Links
 
 	return result, nil
 }
