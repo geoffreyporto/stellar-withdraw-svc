@@ -37,7 +37,7 @@ func (s *Service) approveRequest(
 	}
 	bb, err := json.Marshal(extDetails)
 	if err != nil {
-		return errors.Wrap(err, "failed to marshal external bb map")
+		return errors.Wrap(err, "failed to marshal external details")
 	}
 	envelope, err := s.builder.Transaction(s.withdrawCfg.Owner).Op(xdrbuild.ReviewRequest{
 		ID:     id,
@@ -74,6 +74,7 @@ func (s *Service) permanentReject(
 		ID:     id,
 		Hash:   &request.Attributes.Hash,
 		Action: xdr.ReviewRequestOpActionPermanentReject,
+		Reason: reason,
 		Details: xdrbuild.WithdrawalDetails{
 			ExternalDetails: "{}",
 		},
@@ -83,7 +84,7 @@ func (s *Service) permanentReject(
 	}
 	_, err = s.txSubmitter.Submit(ctx, envelope, true)
 	if err != nil {
-		return errors.Wrap(err, "failed to approve withdraw request")
+		return errors.Wrap(err, "failed to permanently reject withdraw request")
 	}
 
 	return nil
