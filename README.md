@@ -49,3 +49,8 @@ log:
   level: debug
   disable_sentry: true
 ```
+
+> Note: Be careful during development, using testnet, it is [cleaned periodically](https://www.stellar.org/developers/guides/concepts/test-net.html#best-practices-for-using-testnet).
+
+> Use SCJSL6NUTWF6JT45DXUQM3BNGTOKYJ2QR5LE5C2QVQM5BXWKSNAYQYN3 for development and testing on testnet.
+
