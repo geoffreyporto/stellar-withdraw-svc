@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/tokend/stellar-withdraw-svc.svg?branch=master)](https://travis-ci.org/tokend/stellar-withdraw-svc)
+
 # Stellar withdraw integration module
 Stellar withdraw service is a bridge between TokenD and Stellar, which allows 
 to withdraw tokens from TokenD directly to Stellar.
