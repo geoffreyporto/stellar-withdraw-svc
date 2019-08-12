@@ -14,7 +14,6 @@ import (
 	regources "gitlab.com/tokend/regources/generated"
 )
 
-
 func (s *Service) prepare() {
 	filters := s.getFilters()
 	s.withdrawStreamer.SetFilters(filters)
@@ -55,7 +54,7 @@ func (s *Service) processWithdraw(ctx context.Context, request regources.Reviewa
 
 	txSuccess, err := s.submitPayment(request.ID, withdrawDetails.TargetAddress, details.Attributes.Amount.String())
 	if err != nil {
-		return errors.Wrap(err, "payment failed")
+		return s.permanentReject(ctx, request, stellarTxFailed)
 	}
 
 	err = s.approveRequest(ctx, request, 0, taskApproveSuccessfulTxSend, map[string]interface{}{

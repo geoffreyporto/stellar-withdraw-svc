@@ -24,6 +24,7 @@ const (
 	invalidDetails       = "Invalid creator details"
 	invalidTargetAddress = "Invalid target address"
 	noExtAccount         = "External account does not exist"
+	stellarTxFailed      = "Stellar transaction failed"
 )
 
 func (s *Service) approveRequest(
