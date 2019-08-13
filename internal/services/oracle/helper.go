@@ -102,6 +102,7 @@ func (s *Service) submitPayment(
 	tx := txnbuild.Transaction{
 		SourceAccount: &s.stellarSource,
 		Memo:          txnbuild.MemoText(id),
+		BaseFee:       s.paymentCfg.MaxBaseFee,
 		Operations: []txnbuild.Operation{
 			&txnbuild.Payment{
 				Destination: targetAddress,

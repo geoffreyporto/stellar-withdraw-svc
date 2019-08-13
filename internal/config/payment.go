@@ -10,12 +10,14 @@ import (
 type PaymentConfig struct {
 	SourceSigner  *keypair.Full
 	SourceAddress *keypair.FromAddress
+	MaxBaseFee    uint32
 }
 
 func (c *config) PaymentConfig() PaymentConfig {
 	var result struct {
 		SourceSigner  string `fig:"source_signer"`
 		SourceAddress string `fig:"source_address"`
+		MaxBaseFee    uint32`fig:"max_base_fee"`
 	}
 
 	err := figure.
@@ -30,6 +32,7 @@ func (c *config) PaymentConfig() PaymentConfig {
 	c.paymentConfig = PaymentConfig{
 		SourceAddress: keypair.MustParse(result.SourceAddress).(*keypair.FromAddress),
 		SourceSigner:  keypair.MustParse(result.SourceSigner).(*keypair.Full),
+		MaxBaseFee:    result.MaxBaseFee,
 	}
 	return c.paymentConfig
 }
