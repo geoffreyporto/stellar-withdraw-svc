@@ -42,6 +42,7 @@ horizon:
 payment:
   source_signer: "S_SOME_VALID_STELLAR_SECRET_KEY" # Payment sender signer
   source_address: "G_SOME_VALID_STELLAR_ADDRESS" # Payment sender address
+  max_base_fee: #maximum stroops to be paid as transaction fee
 
 withdraw:
   signer: "S_SOME_VALID_SECRET_KEY"
