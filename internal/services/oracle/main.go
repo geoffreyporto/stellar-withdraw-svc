@@ -86,7 +86,6 @@ func (s *Service) Run(ctx context.Context) {
 					Warn("failed to process withdraw request")
 				continue
 			}
-			s.log.WithField("request_id", details.ID).Debug("Successfully processed withdraw")
 		}
 		return nil
 	}, 10*time.Second, 10*time.Second, 5*time.Minute)

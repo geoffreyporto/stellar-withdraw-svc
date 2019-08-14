@@ -27,21 +27,29 @@ func (s *Service) prepare() {
 }
 
 func (s *Service) processWithdraw(ctx context.Context, request regources.ReviewableRequest, details *regources.CreateWithdrawRequest) error {
+	fields := logan.F{
+		"request_id":    request.ID,
+		"amount":        details.Attributes.Amount,
+		"asset":         s.asset.ID,
+		"stellar_asset": s.asset.Stellar.Code,
+	}
 	detailsbb := []byte(details.Attributes.CreatorDetails)
 	withdrawDetails := StellarWithdrawDetails{}
 	err := json.Unmarshal(detailsbb, &withdrawDetails)
 	if err != nil {
-		s.log.WithField("request_id", request.ID).WithError(err).Warn("Unable to unmarshal creator details")
+		s.log.WithFields(fields).WithError(err).Warn("Unable to unmarshal creator details")
 		return s.permanentReject(ctx, request, invalidDetails)
 	}
 
 	if withdrawDetails.TargetAddress == "" {
 		s.log.
+			WithFields(fields).
 			WithField("creator_details", details.Attributes.CreatorDetails).
 			WithError(err).
 			Warn("address missing")
 		return s.permanentReject(ctx, request, invalidTargetAddress)
 	}
+	fields["target_address"] = withdrawDetails.TargetAddress
 
 	if !s.proveExternalAccountExists(withdrawDetails.TargetAddress) {
 		return s.permanentReject(ctx, request, noExtAccount)
@@ -49,11 +57,12 @@ func (s *Service) processWithdraw(ctx context.Context, request regources.Reviewa
 
 	err = s.approveRequest(ctx, request, taskApproveSuccessfulTxSend, taskTrySendToStellar, map[string]interface{}{})
 	if err != nil {
-		return errors.Wrap(err, "failed to review request first time", logan.F{"request_id": request.ID})
+		return errors.Wrap(err, "failed to review request first time", fields)
 	}
 
 	txSuccess, err := s.submitPayment(request.ID, withdrawDetails.TargetAddress, details.Attributes.Amount.String())
 	if err != nil {
+		s.log.WithFields(fields).Warn("stellar transaction failed, rejecting request...")
 		return s.permanentReject(ctx, request, stellarTxFailed)
 	}
 
@@ -61,10 +70,12 @@ func (s *Service) processWithdraw(ctx context.Context, request regources.Reviewa
 		"stellar_tx_hash": txSuccess.Hash,
 	})
 
-	if err != nil {
-		return errors.Wrap(err, "failed to review request second time", logan.F{"request_id": request.ID})
-	}
+	fields["stellar_tx_hash"] = txSuccess.Hash
 
+	if err != nil {
+		return errors.Wrap(err, "failed to review request second time", fields)
+	}
+	s.log.WithFields(fields).Info("Successfully processed withdraw")
 	return nil
 }
 
